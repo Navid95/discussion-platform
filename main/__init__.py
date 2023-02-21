@@ -1,0 +1,30 @@
+from flask import Flask
+from main.conf import config
+
+def create_flask_app(config_name='default'):
+    """
+    Factory method to create a flask application instance using main.conf classes.
+    Functions operates as below:
+
+    First it will initialize the application instance with the config name passed to it.
+
+    Second it will initialize all the flask extensions that are defined in the module with the application instance created in step 1.
+
+    Third it will register the blueprints to the application instance.
+
+    """
+
+    """
+    Application initialization
+    """
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
+    """
+    Initializing the flask extentions
+    """
+
+    """
+    Registering the Blueprints
+    """
+
+    return app
