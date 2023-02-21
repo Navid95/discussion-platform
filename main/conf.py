@@ -1,6 +1,23 @@
 import os
+import logging
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+file_handler = logging.FileHandler(f'logs/{__name__}.log')
+file_handler.setLevel(logging.DEBUG)
+file_handler_format = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(name)s:%(funcName)s:: %(message)s')
+file_handler.setFormatter(file_handler_format)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.WARNING)
+console_handler_format = logging.Formatter(fmt='%(levelname)s:: %(message)s')
+console_handler.setFormatter(console_handler_format)
+
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 
 class BaseConfig:
@@ -64,3 +81,6 @@ config = {
     'production': Pro,
     'default': Dev
 }
+
+
+logger.debug(f'configuration file imported successfully.')

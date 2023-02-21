@@ -1,5 +1,11 @@
 from flask import Flask
-from main.conf import config
+from .conf import config
+from .log_utils import init_logger
+import logging
+
+init_logger(__name__)
+logger = logging.getLogger(__name__)
+
 
 def create_flask_app(config_name='default'):
     """
@@ -17,8 +23,12 @@ def create_flask_app(config_name='default'):
     """
     Application initialization
     """
+    logger.debug(f'attempting to initialize the app with {config_name} configuration ...')
     app = Flask(__name__)
+    logger.info('application initialized successfully.')
     app.config.from_object(config[config_name])
+    logger.debug('custom configuration added to the application instance.')
+
     """
     Initializing the flask extentions
     """

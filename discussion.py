@@ -1,4 +1,3 @@
-from flask import Flask
 from main import create_flask_app
 import os
 
