@@ -1,4 +1,5 @@
 from main import db
+from sqlalchemy.exc import IntegrityError
 from log_utils import init_logger
 from werkzeug.security import generate_password_hash
 import logging
@@ -15,6 +16,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(100), nullable=False)
 
     topics = db.relationship('Topic', backref='owner', lazy='dynamic')
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __repr__(self):
         return {'id': self.id,
@@ -32,3 +34,64 @@ class User(db.Model):
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
+
+    """
+    CRUD methods
+    """
+
+    @staticmethod
+    def get_instance(id=None, **kwargs):
+        if id is not None:
+            return User.query.filter_by(id=id).first()
+        elif kwargs.get('email') is not None:
+            return User.query.filter_by(email=kwargs['email']).first()
+        else:
+            return False
+
+    @staticmethod
+    def get_all():
+        return User.query.all()
+
+    @staticmethod
+    def delete_instance(id=None, instance=None, **kwargs):
+        if id is not None:
+            user = User.get_instance(id=id)
+        elif instance is not None and isinstance(instance, User):
+            user = instance
+        elif kwargs.get('email') is not None:
+            user = User.get_instance(email=kwargs['email'])
+        else:
+            return False
+        try:
+            db.session.delete(user)
+            db.session.commit()
+        except BaseException as e:
+            logger.exception(e)
+            db.session.rollback()
+            return False
+
+    @staticmethod
+    def persist(instance):
+        try:
+            if isinstance(instance, User):
+                db.session.add(instance)
+                db.session.commit()
+                return True
+            else:
+                return False
+        except IntegrityError as e:
+            logger.warning(e.orig)
+            logger.warning(e.orig.args)
+            db.session.rollback()
+            return False
+        except BaseException as e:
+            logger.exception(e)
+            db.session.rollback()
+            return False
+
+    # TODO check why simple python assignment on a field (exp. email) changes the db row (test_models.test_user_crud Update section)
+    @staticmethod
+    def update(instance):
+        pass
+
+
