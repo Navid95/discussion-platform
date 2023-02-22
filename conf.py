@@ -1,23 +1,11 @@
 import os
 import logging
+from log_utils import init_logger
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+init_logger(__name__)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-file_handler = logging.FileHandler(f'logs/{__name__}.log')
-file_handler.setLevel(logging.DEBUG)
-file_handler_format = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(name)s:%(funcName)s:: %(message)s')
-file_handler.setFormatter(file_handler_format)
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.WARNING)
-console_handler_format = logging.Formatter(fmt='%(levelname)s:: %(message)s')
-console_handler.setFormatter(console_handler_format)
-
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
 
 
 class BaseConfig:
@@ -42,9 +30,12 @@ class Dev(BaseConfig):
 
     :DEBUG: Defaults to True
 
+    :TESTING: an indicator that the application is running in the test mode
+
     :SQLALCHEMY_DATABASE_URI: The URI that SQLALCHEMY uses to for connection string
     """
     DEBUG = True
+    TESTING = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
                               'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
 
@@ -55,11 +46,17 @@ class Test(BaseConfig):
 
         :DEBUG: Defaults to True
 
+        :TESTING: an indicator that the application is running in the test mode
+
         :SQLALCHEMY_DATABASE_URI: The URI that SQLALCHEMY uses for connection string, test environment uses an in-memory DB if no "TEST_DATABASE_URL" is available in environment variables
         """
     DEBUG = True
+    TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
                               'sqlite://'
+                              # 'sqlite:///'+ os.path.join(basedir, 'db.sqlite')
+                              # 'sqlite:////home/navid/PycharmProjects/discussion-platform/db.sqlite'
+
 
 
 class Pro(BaseConfig):
@@ -68,9 +65,12 @@ class Pro(BaseConfig):
 
             :DEBUG: Defaults to False
 
+            :TESTING: an indicator that the application is running in the test mode
+
             :SQLALCHEMY_DATABASE_URI: The URI that SQLALCHEMY uses to for connection string
             """
     DEBUG = False
+    TESTING = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('PRO_DATABASE_URL') or \
                               'sqlite:///' + os.path.join(basedir, 'data-pro.sqlite')
 
@@ -81,6 +81,5 @@ config = {
     'production': Pro,
     'default': Dev
 }
-
 
 logger.debug(f'configuration file imported successfully.')
