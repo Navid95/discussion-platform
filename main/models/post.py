@@ -7,6 +7,7 @@ init_logger(__name__)
 logger = logging.getLogger(__name__)
 
 
+
 class Post(db.Model):
     __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
@@ -15,7 +16,7 @@ class Post(db.Model):
     topic_id = db.Column(db.Integer, db.ForeignKey('topic.id'))
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __str__(self):
+    def __repr__(self):
         return {'id': self.id,
                 'content': self.content,
                 'topic_id': self.topic_id,
@@ -79,3 +80,17 @@ class Post(db.Model):
         pass
 
 
+"""
+marshmallow schema
+"""
+
+
+# class PostSchema(ma.SQLAlchemySchema):
+#     class Meta:
+#         model = Post
+#         include_fk = True
+#
+#     id = ma.auto_field()
+#     content = ma.auto_field()
+#     topic_id = ma.auto_field()
+#     author_id = ma.auto_field()

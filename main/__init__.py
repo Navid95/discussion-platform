@@ -3,10 +3,14 @@ from conf import config
 from log_utils import init_logger
 import logging
 from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
+from flask_httpauth import HTTPBasicAuth
+
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
 db = SQLAlchemy()
+marshmallow = Marshmallow()
 
 
 def create_flask_app(config_name='default'):
@@ -41,9 +45,13 @@ def create_flask_app(config_name='default'):
     Initializing the flask extentions
     """
     db.init_app(app)
+    marshmallow.init_app(app)
 
     """
     Registering the Blueprints
     """
+    from .blueprints import apis
+    app.register_blueprint(blueprint=apis.apiv1,url_prefix='/api/v1')
 
+    logger.debug(f'application instance initialization completed')
     return app

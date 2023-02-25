@@ -1,0 +1,11 @@
+1- factory based app initialization
+    1.1 config factory --> Done
+    1.2 create app function that returns an instance of Flask app --> Done
+    1.3 search and deploy logger -- Done
+2- adding models and initial tests
+    2.1 User model
+    2.2 topic model
+    2.3 Authentication and authorization
+3- adding REST endpoints (CRUD)
+
+* search: swagger / Marshmallow (Done) / logger (Done) /

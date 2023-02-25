@@ -1,6 +1,6 @@
 from unittest import TestCase
 from main import create_flask_app, db
-from main.models import User, Topic, Post
+
 from log_utils import init_logger
 import logging
 
@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 class test_models(TestCase):
 
     def setUp(self):
+        from main.models import User, Topic, Post
         self.app = create_flask_app('test')
         self.app_context = self.app.app_context()
         self.app_context.push()
@@ -20,7 +21,23 @@ class test_models(TestCase):
         self.topic1 = Topic(title='self_title1')
         self.post1 = Post(content='blah blah blah')
 
-        db.session.add_all([self.user1, self.topic1, self.post1])
+        self.user2 = User(email='self_user2@email.com', password='user2')
+        self.user3 = User(email='self_user3@email.com', password='user3')
+        self.user4 = User(email='self_user4@email.com', password='user4')
+
+        self.topic2 = Topic(title='self_title2')
+        self.topic3 = Topic(title='self_title3')
+
+        self.post2 = Post(content='self.post2 content')
+        self.post3 = Post(content='self.post3 content')
+
+        self.user2.topics.append(self.topic2)
+        self.user2.topics.append(self.topic3)
+
+        self.user3.follows.append(self.topic2)
+        self.user3.follows.append(self.topic3)
+
+        db.session.add_all([self.user1, self.user2, self.user4, self.topic1, self.post1, self.topic2, self.post2])
         db.session.commit()
 
     def tearDown(self):
@@ -30,6 +47,7 @@ class test_models(TestCase):
         pass
 
     def test_user_creation(self):
+        from main.models import User, Topic, Post
         user = User(email='user1@email.com', password='1234')
         db.session.add(user)
         db.session.commit()
@@ -38,6 +56,7 @@ class test_models(TestCase):
         self.assertIsNotNone(tmp_user)
 
     def test_topic_creation(self):
+        from main.models import User, Topic, Post
         title = 'arbitrary title'
         topic = Topic(title=title)
         db.session.add(topic)
@@ -46,6 +65,7 @@ class test_models(TestCase):
         self.assertIsNotNone(Topic.query.filter_by(title=title).first())
 
     def test_user_topic_assignment(self):
+        from main.models import User, Topic, Post
         self.user1.topics.append(self.topic1)
         db.session.add(self.user1)
         db.session.commit()
@@ -59,6 +79,7 @@ class test_models(TestCase):
         self.assertTrue(len(User.query.all()) == 1)
 
     def test_topic_user_assignment(self):
+        from main.models import User, Topic, Post
         self.topic1.owner_id = self.user1.id
         db.session.add(self.topic1)
         logger.debug(f'assigned self.user1.id to self.topic1.owner_id')
@@ -72,6 +93,7 @@ class test_models(TestCase):
         self.assertTrue(len(Topic.query.all()) == 1)
 
     def test_post_creation(self):
+        from main.models import User, Topic, Post
         post = Post(content='xxxxxx')
         db.session.add(post)
         db.session.commit()
@@ -80,6 +102,7 @@ class test_models(TestCase):
         self.assertIsNotNone(Post.query.filter_by(id=post.id).first())
 
     def test_post_topic_assignment(self):
+        from main.models import User, Topic, Post
         self.post1.topic_id = self.topic1.id
         db.session.add(self.post1)
         db.session.commit()
@@ -95,6 +118,7 @@ class test_models(TestCase):
         self.assertTrue(len(Topic.query.all()) == 1)
 
     def test_topic_post_assignment(self):
+        from main.models import User, Topic, Post
         self.topic1.posts.append(self.post1)
         db.session.add(self.topic1)
         db.session.commit()
@@ -111,6 +135,7 @@ class test_models(TestCase):
         self.assertTrue(len(Topic.query.all()) == 1)
 
     def test_user_post_on_topic_assignment(self):
+        from main.models import User, Topic, Post
         self.topic1.posts.append(self.post1)
         self.user1.posts.append(self.post1)
         user2 = User(email='user2@email.com', password='1234')
@@ -138,6 +163,7 @@ class test_models(TestCase):
         self.assertIn(self.topic1, User.query.filter_by(id=user2.id).first().topics)
 
     def test_user_crud(self):
+        from main.models import User, Topic, Post
         email = 'crud-user@email.com'
         user = User(email=email, password='crud-user')
         user.topics.append(self.topic1)
@@ -207,6 +233,7 @@ class test_models(TestCase):
         logger.debug(f'Delete operations tests passed successfully')
 
     def test_topic_crud(self):
+        from main.models import User, Topic, Post
         title = 'title1'
         topic = Topic(title=title)
 
@@ -265,6 +292,7 @@ class test_models(TestCase):
         logger.debug(f'Delete operations tests passed successfully')
 
     def test_post_crud(self):
+        from main.models import User, Topic, Post
         post = Post(content='content')
 
         """
@@ -316,3 +344,37 @@ class test_models(TestCase):
         self.assertIsNone(Post.get_instance(id=id_2))
 
         logger.debug(f'Delete operations tests passed successfully')
+
+    def test_user_follow_topic(self):
+        from main.models import User, Topic, Post
+        # from main.models.user import UserSchema
+        # from main.models.topic import TopicSchema
+        # user_schema = UserSchema()
+        # topic_schema = TopicSchema()
+        follows = list()
+        follows.append(self.topic2)
+        follows.append(self.topic3)
+        user3_follows = Topic.query.filter(Topic.followers.contains(self.user3)).all()
+        # user3_follows = User.query.filter(Topic.followers.contains(self.user3)).all()
+        topic3_followers = Topic.query.filter_by(id=self.topic3.id).first().followers
+        logger.debug(f'---------------------> {topic3_followers}')
+        self.assertCountEqual(follows, user3_follows)
+
+    def test_add_topic(self):
+        from main.models import User, Topic, Post
+        user1 = User(email='navid.mhkh@gmail.com', password='1234')
+        user2 = User(email='navid.me@mtnirancell.com', password='1234')
+        topic1 = Topic(title='topic1')
+        user1.init_topic(topic1)
+        db.session.add_all([user1, user2, topic1])
+        db.session.commit()
+        # email.send_topic_invite_link(sender=user1,receiver=user2,topic=topic1)
+        self.assertTrue(user1.has_followed(topic1))
+        self.assertTrue(user1.owns_topic(topic1))
+
+    def test_invite(self):
+        from main.models import User, Topic, Post
+        self.user2.invite_user_to_topic(self.user4, self.topic2)
+        self.assertTrue(self.user4.is_in_waiting_list(self.topic2))
+        user = User.get_instance(self.user4.id)
+        self.assertTrue(user.is_in_waiting_list(self.topic2))

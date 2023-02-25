@@ -22,6 +22,14 @@ class BaseConfig:
 
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'discussion app secret key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    CUSTOM_ENCRYPTION_ALGO = os.environ.get('CUSTOM_ENCRYPTION_ALGO') or 'HS256'
+    DISCUSSION_MAIL_SUBJECT_PREFIX = os.environ.get('DISCUSSION_MAIL_SUBJECT_PREFIX') or 'DISCUSSION-PLATFORM'
+
+    # MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
+    # MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
+    # MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
+    # MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    # MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 
 
 class Dev(BaseConfig):

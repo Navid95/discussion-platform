@@ -1,5 +1,7 @@
+
 from main import db
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import Table
 from log_utils import init_logger
 import logging
 
@@ -81,4 +83,28 @@ class Topic(db.Model):
     def update(instance):
         pass
 
+    """
+    business logic
+    """
+    def add_post(self, post):
+        self.posts.append(post)
+        db.session.add(self)
+        db.session.commit()
 
+"""
+marshmallow schema
+"""
+
+
+# class TopicSchema(ma.SQLAlchemySchema):
+#     # from .post import PostSchema
+#     # from .user import UserSchema
+#
+#     class Meta:
+#         model = Topic
+#         include_fk = True
+#
+#     id = ma.auto_field()
+#     title = ma.auto_field()
+#     owner_id = ma.auto_field()
+#     posts = ma.Nested(model.PostSchema, many=True)

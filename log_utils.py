@@ -3,6 +3,8 @@ import logging
 logging.basicConfig(filemode='w')
 
 
+# TODO create 3 log streams (api.log for endpoints(user before and after hooks) / exception.log for developers) / app.log for trace and debug during development
+
 def init_logger(name):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
