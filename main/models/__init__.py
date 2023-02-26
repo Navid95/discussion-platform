@@ -1,11 +1,9 @@
-from .post import Post
-from .topic import Topic
-from .user import User
+print(f'-------------------------------------{__name__}----------------------------------------------')
 
+from . import base, post, topic, user
 
-from log_utils import init_logger
-import logging
-init_logger(__name__)
-logger = logging.getLogger(__name__)
+User = user.User
+Topic = topic.Topic
+Post = post.Post
 
 # TODO create base class for all models

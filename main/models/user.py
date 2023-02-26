@@ -1,4 +1,6 @@
-from main import db
+print(f'-------------------------------------{__name__}----------------------------------------------')
+
+from ..extensions import db
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from log_utils import init_logger
@@ -6,6 +8,7 @@ import logging
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
+print(f'-------------------------------{__name__}-----------------------------------')
 
 # TODO all custom configs should be created at app initialization in json format
 
@@ -149,28 +152,6 @@ class User(db.Model):
         else:
             return False
 
-
-
-
-
-
-"""
-marshmallow schema
-"""
-#
-#
-# class UserSchema(ma.SQLAlchemySchema):
-#     class Meta:
-#         model = User
-#
-#     id = fields.Integer(dump_only=True)
-#     email = fields.Email(required=True)
-#     password = fields.String(load_only=True)
-#
-#     @post_load
-#     def make_user(self, data, **kwargs):
-#         return User(**data)
-#
 
 """
 functions

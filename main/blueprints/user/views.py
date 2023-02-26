@@ -1,17 +1,19 @@
-import main.blueprints.apis.v1 as api_version
-import logging
-from log_utils import init_logger
-import main.models.user as model
+print(f'-------------------------------------{__name__}-------------------------------------')
+
 from flask import request, jsonify, abort
-import main.schemas as schemas
+from ...models import User
+from ...schemas import user_schema
 import main.authentication as authentication
+from . import user
+
+from log_utils import init_logger
+import logging
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
 
-api = api_version.apiv1
-User = model.User
-schema = schemas.user_schema.UserSchema()
+api = user
+schema = user_schema.UserSchema()
 auth = authentication.auth
 """
 CRUD APIs
@@ -19,18 +21,18 @@ CRUD APIs
 
 
 # TODO remove this API
-@api.route('/user/get/all', methods=['GET'])
+@api.route('/get/all', methods=['GET'])
 def get_all():
     return schema.dumps(User.get_all(), many=True)
 
 
-@api.route('/user/<id>', methods=['GET'])
+@api.route('/<id>', methods=['GET'])
 @authentication.user_owner_required
 def get_instance(id):
     return schema.dumps(User.get_instance(id=id))
 
 
-@api.route('/user', methods=['GET'])
+@api.route('/', methods=['GET'])
 @authentication.user_owner_required
 def search_user(id):
     """
@@ -41,7 +43,7 @@ def search_user(id):
     pass
 
 
-@api.route('/user', methods=['POST'])
+@api.route('/', methods=['POST'])
 def create_user():
     json_raw = request.get_json()
     create_user = schema.load(json_raw)
@@ -52,7 +54,7 @@ def create_user():
         abort(400)
 
 
-@api.route('/user', methods=['PUT', 'PATCH'])
+@api.route('/', methods=['PUT', 'PATCH'])
 def update_user():
     pass
 

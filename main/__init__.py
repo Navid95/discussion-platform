@@ -1,16 +1,15 @@
+print(f'-------------------------------------{__name__}----------------------------------------------')
+
 from flask import Flask
-from conf import config
+import conf
 from log_utils import init_logger
 import logging
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
-from flask_httpauth import HTTPBasicAuth
+from .extensions import db, marshmallow
 
+config = conf.config
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
-db = SQLAlchemy()
-marshmallow = Marshmallow()
 
 
 def create_flask_app(config_name='default'):
@@ -33,11 +32,9 @@ def create_flask_app(config_name='default'):
 
     app = Flask(__name__)
 
-
     logger.info('application initialized successfully.')
 
     app.config.from_object(config[config_name])
-
 
     logger.debug('custom configuration added to the application instance.')
 
@@ -52,6 +49,15 @@ def create_flask_app(config_name='default'):
     """
     from .blueprints import apis
     app.register_blueprint(blueprint=apis.apiv1,url_prefix='/api/v1')
+
+    from .blueprints import user
+    app.register_blueprint(blueprint=user.user, url_prefix='/api/v1/user')
+
+    from .blueprints import topic
+    app.register_blueprint(blueprint=topic.topic, url_prefix='/api/v1/topic')
+
+    from .blueprints import post
+    app.register_blueprint(blueprint=post.post, url_prefix='/api/v1/post')
 
     logger.debug(f'application instance initialization completed')
     return app

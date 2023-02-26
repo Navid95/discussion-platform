@@ -1,12 +1,12 @@
-
-from main import db
+print(f'-------------------------------------{__name__}----------------------------------------------')
+from ..extensions import db
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import Table
 from log_utils import init_logger
 import logging
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
+print(f'-------------------------------{__name__}-----------------------------------')
 
 
 class Topic(db.Model):

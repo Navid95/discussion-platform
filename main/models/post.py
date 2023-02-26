@@ -1,11 +1,13 @@
-from main import db
+print(f'-------------------------------------{__name__}----------------------------------------------')
+
+from ..extensions import db
 from sqlalchemy.exc import IntegrityError
 from log_utils import init_logger
 import logging
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
-
+print(f'-------------------------------{__name__}-----------------------------------')
 
 
 class Post(db.Model):
@@ -83,7 +85,6 @@ class Post(db.Model):
 """
 marshmallow schema
 """
-
 
 # class PostSchema(ma.SQLAlchemySchema):
 #     class Meta:

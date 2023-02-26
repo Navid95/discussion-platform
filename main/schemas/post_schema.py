@@ -1,7 +1,7 @@
-import main.models as models
-from marshmallow import post_load, fields
-from main import marshmallow as ma
+print(f'-------------------------------------{__name__}----------------------------------------------')
 
+from ..extensions import marshmallow as ma
+from ..models import Post
 import logging
 from log_utils import init_logger
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class PostSchema(ma.SQLAlchemySchema):
     class Meta:
-        model = models.Post
+        model = Post
         include_fk = True
 
     id = ma.auto_field()

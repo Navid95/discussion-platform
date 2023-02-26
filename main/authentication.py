@@ -1,6 +1,6 @@
 from flask import g, abort
 from flask_httpauth import HTTPBasicAuth
-from main.models import User
+from .models import User
 from functools import wraps
 
 from log_utils import init_logger

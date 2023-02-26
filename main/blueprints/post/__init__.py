@@ -1,4 +1,8 @@
 print(f'-------------------------------------{__name__}----------------------------------------------')
 
-from .v1 import apiv1
+from flask import Blueprint
+
+post = Blueprint('post', __name__)
+
+from . import views
 

@@ -1,10 +1,10 @@
-from main import create_flask_app, db
-from main.models import User, Topic, Post
+print(f'-------------------------------------{__name__}----------------------------------------------')
 import os
+from main import create_flask_app, db
+from main.models import User,Topic,Post
 from flask_migrate import Migrate
 
 DISCUSSION_OPT_MODE = os.environ.get('DISCUSSION_OPT_MODE') or 'default'
-
 app = create_flask_app(DISCUSSION_OPT_MODE)
 migrate = Migrate(app=app, db=db)
 
