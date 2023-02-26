@@ -1,18 +1,19 @@
 print(f'-------------------------------------{__name__}----------------------------------------------')
 
-from ..extensions import db
+from main.extensions import db
 from sqlalchemy.exc import IntegrityError
+from main.models.base_model import BaseModel
+
 from log_utils import init_logger
 import logging
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
-print(f'-------------------------------{__name__}-----------------------------------')
 
 
-class Post(db.Model):
+class Post(BaseModel):
     __tablename__ = 'post'
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(255), nullable=False)
 
     topic_id = db.Column(db.Integer, db.ForeignKey('topic.id'))
@@ -78,8 +79,46 @@ class Post(db.Model):
             return False
 
     @staticmethod
-    def update(instance):
+    def update_instance(instance):
         pass
+
+    """
+    Inherited CRUD methods
+    """
+
+    def save(instance):
+        try:
+            if isinstance(instance, Post):
+                db.session.add(instance)
+                db.session.commit()
+                return True
+            else:
+                return False
+        except IntegrityError as e:
+            logger.warning(e.orig)
+            logger.warning(e.orig.args)
+            db.session.rollback()
+            return False
+        except BaseException as e:
+            logger.exception(e)
+            db.session.rollback()
+            return False
+
+    def get(id):
+        return Post.query.filter_by(id=id).first()
+
+    def update(instance):
+        return Post.save(instance)
+
+    def delete(id):
+        try:
+            db.session.delete(Post.get(id=id))
+            db.session.commit()
+            return True
+        except BaseException as e:
+            logger.exception(f'exception in deleting User with id={id}. Trying to rollback')
+            db.session.rollback()
+            return False
 
 
 """

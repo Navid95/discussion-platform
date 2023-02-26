@@ -1,14 +1,15 @@
 print(f'-------------------------------------{__name__}----------------------------------------------')
 
-from ..extensions import db
+from main.extensions import db
+from main.models.base_model import BaseModel
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from log_utils import init_logger
 import logging
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
-print(f'-------------------------------{__name__}-----------------------------------')
 
 # TODO all custom configs should be created at app initialization in json format
 
@@ -21,31 +22,36 @@ user_follows = db.Table('user_follows',
                         db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
                         db.Column('topic_id', db.Integer, db.ForeignKey('topic.id'), primary_key=True))
 
-user_waiting_acceptance=db.Table('user_waiting',
-                                 db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-                                 db.Column('topic_id', db.Integer, db.ForeignKey('topic.id'), primary_key=True))
+user_waiting_acceptance = db.Table('user_waiting',
+                                   db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+                                   db.Column('topic_id', db.Integer, db.ForeignKey('topic.id'), primary_key=True))
 
 
-class User(db.Model):
+class User(BaseModel):
     __tablename__ = 'user'
 
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(100), nullable=False)
 
-    topics = db.relationship('Topic', backref='owner', lazy='dynamic',collection_class=list)
+    topics = db.relationship('Topic', backref='owner', lazy='dynamic', collection_class=list)
     follows = db.relationship('Topic', secondary=user_follows, backref='followers')
-    waiting_accept=db.relationship('Topic', secondary=user_waiting_acceptance, backref='invites')
+    waiting_accept = db.relationship('Topic', secondary=user_waiting_acceptance, backref='invites')
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+
+    def __init__(self, email, password, **kwargs):
+        super(User, self).__init__(**kwargs)
+        self.email = email
+        self.password = password
 
     def __repr__(self):
         return {'id': self.id,
                 'email': self.email,
                 'password_hash': self.password_hash,
-                'topics': self.topics
+                'created': self.created,
+                'updated': self.updated
                 }.__str__()
 
-    # TODO read more about python @property and decorators
     @property
     def password(self):
         logger.warning(f'attempted to read {User} instance {self} password!')
@@ -61,7 +67,7 @@ class User(db.Model):
     """
     CRUD methods
     """
-# TODO CRUD methods should only work with <id>, others should be defined in separate methods/apis
+
     @staticmethod
     def get_instance(id=None, **kwargs):
         if id is not None:
@@ -114,8 +120,47 @@ class User(db.Model):
 
     # TODO check why simple python assignment on a field (exp. email) changes the db row (test_models.test_user_crud Update section)
     @staticmethod
-    def update(instance):
+    def update_instance(instance):
         pass
+
+    """
+    Inherited CRUD methods
+    """
+
+    def save(instance):
+        try:
+            if isinstance(instance, User):
+                db.session.add(instance)
+                db.session.commit()
+                return True
+            else:
+                return False
+        except IntegrityError as e:
+            logger.warning(e.orig)
+            logger.warning(e.orig.args)
+            db.session.rollback()
+            return False
+        except BaseException as e:
+            logger.exception(e)
+            db.session.rollback()
+            return False
+
+    def get(id):
+        return User.query.filter_by(id=id).first()
+
+    # TODO search best practices for update api
+    def update(instance):
+        return User.save(instance)
+
+    def delete(id):
+        try:
+            db.session.delete(User.get(id=id))
+            db.session.commit()
+            return True
+        except BaseException as e:
+            logger.exception(f'exception in deleting User with id={id}. Trying to rollback')
+            db.session.rollback()
+            return False
 
     """
     business logic

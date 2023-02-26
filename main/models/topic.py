@@ -1,18 +1,20 @@
 print(f'-------------------------------------{__name__}----------------------------------------------')
-from ..extensions import db
+
+from main.extensions import db
 from sqlalchemy.exc import IntegrityError
+from .base_model import BaseModel
+
 from log_utils import init_logger
 import logging
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)
-print(f'-------------------------------{__name__}-----------------------------------')
 
 
-class Topic(db.Model):
+class Topic(BaseModel):
     __tablename__ = 'topic'
 
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64), unique=True, index=True)
 
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -80,21 +82,60 @@ class Topic(db.Model):
             return False
 
     @staticmethod
-    def update(instance):
+    def update_instance(instance):
         pass
+
+    """
+    Inherited CRUD methods
+    """
+
+    def save(instance):
+        try:
+            if isinstance(instance, Topic):
+                db.session.add(instance)
+                db.session.commit()
+                return True
+            else:
+                return False
+        except IntegrityError as e:
+            logger.warning(e.orig)
+            logger.warning(e.orig.args)
+            db.session.rollback()
+            return False
+        except BaseException as e:
+            logger.exception(e)
+            db.session.rollback()
+            return False
+
+    def get(id):
+        return Topic.query.filter_by(id=id).first()
+
+    def update(instance):
+        return Topic.save(instance)
+
+    def delete(id):
+        try:
+            db.session.delete(Topic.get(id=id))
+            db.session.commit()
+            return True
+        except BaseException as e:
+            logger.exception(f'exception in deleting User with id={id}. Trying to rollback')
+            db.session.rollback()
+            return False
 
     """
     business logic
     """
+
     def add_post(self, post):
         self.posts.append(post)
         db.session.add(self)
         db.session.commit()
 
+
 """
 marshmallow schema
 """
-
 
 # class TopicSchema(ma.SQLAlchemySchema):
 #     # from .post import PostSchema
