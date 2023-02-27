@@ -14,7 +14,7 @@ class BaseModel(db.Model):
 
     @staticmethod
     def get(id):
-        pass
+        return BaseModel.query.filter_by(id=id).first()
 
     @staticmethod
     def save(instance):

@@ -2,7 +2,7 @@ print(f'-------------------------------------{__name__}-------------------------
 
 from flask import Flask
 import conf
-from log_utils import init_logger
+from main.configuration.log_utils import init_logger
 import logging
 from .extensions import db, marshmallow
 
@@ -50,8 +50,8 @@ def create_flask_app(config_name='default'):
     from .blueprints import apis
     app.register_blueprint(blueprint=apis.apiv1,url_prefix='/api/v1')
 
-    from .blueprints import user
-    app.register_blueprint(blueprint=user.user, url_prefix='/api/v1/user')
+    from .blueprints import account
+    app.register_blueprint(blueprint=account.user_blueprint, url_prefix='/api/v1/user')
 
     from .blueprints import topic
     app.register_blueprint(blueprint=topic.topic, url_prefix='/api/v1/topic')

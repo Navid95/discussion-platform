@@ -1,7 +1,7 @@
 from unittest import TestCase
 from main import create_flask_app
 from main.models import User, Topic, Post
-from log_utils import init_logger
+from main.configuration.log_utils import init_logger
 import logging
 from main.extensions import db
 from datetime import datetime, timedelta
@@ -56,7 +56,7 @@ class test_models(TestCase):
         self.assertIsNotNone(tmp_user)
 
     def test_topic_creation(self):
-        from main.models import User, Topic, Post
+        from main.models import Topic
         title = 'arbitrary title'
         topic = Topic(title=title)
         db.session.add(topic)
@@ -79,7 +79,7 @@ class test_models(TestCase):
         self.assertTrue(len(User.get_all()) == 4)
 
     def test_topic_user_assignment(self):
-        from main.models import User, Topic, Post
+        from main.models import User, Topic
         self.topic1.owner_id = self.user1.id
         db.session.add(self.topic1)
         logger.debug(f'assigned self.user1.id to self.topic1.owner_id')
@@ -93,7 +93,7 @@ class test_models(TestCase):
         self.assertTrue(len(Topic.query.all()) == 1)
 
     def test_post_creation(self):
-        from main.models import User, Topic, Post
+        from main.models import Post
         post = Post(content='xxxxxx')
         db.session.add(post)
         db.session.commit()
@@ -102,7 +102,7 @@ class test_models(TestCase):
         self.assertIsNotNone(Post.query.filter_by(id=post.id).first())
 
     def test_post_topic_assignment(self):
-        from main.models import User, Topic, Post
+        from main.models import Topic, Post
         self.post1.topic_id = self.topic1.id
         db.session.add(self.post1)
         db.session.commit()
@@ -118,7 +118,7 @@ class test_models(TestCase):
         self.assertTrue(len(Topic.query.all()) == 1)
 
     def test_topic_post_assignment(self):
-        from main.models import User, Topic, Post
+        from main.models import Topic, Post
         self.topic1.posts.append(self.post1)
         db.session.add(self.topic1)
         db.session.commit()
@@ -135,7 +135,7 @@ class test_models(TestCase):
         self.assertTrue(len(Topic.query.all()) == 1)
 
     def test_user_post_on_topic_assignment(self):
-        from main.models import User, Topic, Post
+        from main.models import User, Post
         self.topic1.posts.append(self.post1)
         self.user1.posts.append(self.post1)
         user2 = User(email='user2@email.com', password='1234')
@@ -163,7 +163,7 @@ class test_models(TestCase):
         self.assertIn(self.topic1, User.query.filter_by(id=user2.id).first().topics)
 
     def test_user_crud(self):
-        from main.models import User, Topic, Post
+        from main.models import User
         email = 'crud-user@email.com'
         user = User(email=email, password='crud-user')
         user.topics.append(self.topic1)
@@ -233,7 +233,7 @@ class test_models(TestCase):
         logger.debug(f'Delete operations tests passed successfully')
 
     def test_topic_crud(self):
-        from main.models import User, Topic, Post
+        from main.models import Topic
         title = 'title1'
         topic = Topic(title=title)
 
@@ -292,7 +292,7 @@ class test_models(TestCase):
         logger.debug(f'Delete operations tests passed successfully')
 
     def test_post_crud(self):
-        from main.models import User, Topic, Post
+        from main.models import Post
         post = Post(content='content')
 
         """
@@ -346,7 +346,7 @@ class test_models(TestCase):
         logger.debug(f'Delete operations tests passed successfully')
 
     def test_user_follow_topic(self):
-        from main.models import User, Topic, Post
+        from main.models import Topic
         # from main.models.user import UserSchema
         # from main.models.topic import TopicSchema
         # user_schema = UserSchema()
@@ -361,7 +361,7 @@ class test_models(TestCase):
         self.assertCountEqual(follows, user3_follows)
 
     def test_add_topic(self):
-        from main.models import User, Topic, Post
+        from main.models import User, Topic
         user1 = User(email='navid.mhkh@gmail.com', password='1234')
         user2 = User(email='navid.me@mtnirancell.com', password='1234')
         topic1 = Topic(title='topic1')

@@ -4,7 +4,7 @@ from ..extensions import marshmallow as ma
 from ..models import User
 from marshmallow import post_load, fields
 import logging
-from log_utils import init_logger
+from main.configuration.log_utils import init_logger
 
 init_logger(__name__)
 logger = logging.getLogger(__name__)

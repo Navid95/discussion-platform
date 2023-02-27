@@ -1,6 +1,6 @@
 import os
 import logging
-from log_utils import init_logger
+from main.configuration.log_utils import init_logger
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 

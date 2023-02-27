@@ -1,9 +1,9 @@
 from flask import g, abort
 from flask_httpauth import HTTPBasicAuth
-from .models import User
+from main.models import User
 from functools import wraps
 
-from log_utils import init_logger
+from main.configuration.log_utils import init_logger
 import logging
 
 init_logger(__name__)
@@ -17,7 +17,7 @@ auth = HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(email, password):
-    logger.debug(f'verifying password {password} for {email}')
+    logger.debug(f'verifying password for {email}')
     if email == '':
         return False
     user = User.get_instance(email=email)
@@ -32,6 +32,7 @@ def verify_password(email, password):
 
 def user_owner_required(f):
     logger.debug(f'decorator user_owner_required intercepted request of {f.__name__}')
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
         logger.debug(f'{decorated_func.__name__} received *args: {args} and **kwargs: {kwargs}')

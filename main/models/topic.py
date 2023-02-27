@@ -4,7 +4,7 @@ from main.extensions import db
 from sqlalchemy.exc import IntegrityError
 from .base_model import BaseModel
 
-from log_utils import init_logger
+from main.configuration.log_utils import init_logger
 import logging
 
 init_logger(__name__)

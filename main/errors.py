@@ -1,7 +1,7 @@
 from discussion import app
 from flask import request, jsonify
 
-from log_utils import init_logger
+from main.configuration.log_utils import init_logger
 import logging
 
 init_logger(__name__)

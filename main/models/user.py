@@ -5,7 +5,7 @@ from main.models.base_model import BaseModel
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from log_utils import init_logger
+from main.configuration.log_utils import init_logger
 import logging
 
 init_logger(__name__)
