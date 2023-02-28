@@ -1,14 +1,9 @@
 print(f'-------------------------------------{__name__}----------------------------------------------')
 
-from main.extensions import db
+from extensions import db
 from sqlalchemy.exc import IntegrityError
 from main.models.base_model import BaseModel
-
-from main.configuration.log_utils import init_logger
-import logging
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
+from main.utilities import app_logger as logger
 
 
 class Post(BaseModel):

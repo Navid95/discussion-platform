@@ -1,11 +1,7 @@
 import os
-import logging
-from main.configuration.log_utils import init_logger
-
+from main.utilities import app_logger as logger
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-init_logger(__name__)
-logger = logging.getLogger(__name__)
 
 
 class BaseConfig:
@@ -24,6 +20,7 @@ class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CUSTOM_ENCRYPTION_ALGO = os.environ.get('CUSTOM_ENCRYPTION_ALGO') or 'HS256'
     DISCUSSION_MAIL_SUBJECT_PREFIX = os.environ.get('DISCUSSION_MAIL_SUBJECT_PREFIX') or 'DISCUSSION-PLATFORM'
+    REDIS_DECODE_RESPONSES = True
 
     # MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
     # MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))

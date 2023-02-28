@@ -1,15 +1,13 @@
-print(f'-------------------------------------{__name__}----------------------------------------------')
+# print(f'-------------------------------------{__name__}----------------------------------------------')
 
 from flask import Flask
 import conf
-from main.configuration.log_utils import init_logger
-import logging
-from .extensions import db, marshmallow
+from main.utilities import app_logger as logger
+from extensions import db, marshmallow, redis_client
+from main.middleware.custom_http_middleware import HTTPCustomMiddleware
+from flask_http_middleware import MiddlewareManager
 
 config = conf.config
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
 
 
 def create_flask_app(config_name='default'):
@@ -43,12 +41,20 @@ def create_flask_app(config_name='default'):
     """
     db.init_app(app)
     marshmallow.init_app(app)
+    redis_client.init_app(app, decode_responses=True)
+
+    """
+    Adding middlewares
+    """
+
+    # app.wsgi_app = MiddlewareManager(app)
+    # app.wsgi_app.add_middleware(HTTPCustomMiddleware)
 
     """
     Registering the Blueprints
     """
-    from .blueprints import apis
-    app.register_blueprint(blueprint=apis.apiv1,url_prefix='/api/v1')
+    from .blueprints import default
+    app.register_blueprint(blueprint=default.default)
 
     from .blueprints import account
     app.register_blueprint(blueprint=account.user_blueprint, url_prefix='/api/v1/user')

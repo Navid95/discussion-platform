@@ -1,8 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from main.configuration.base import Base
-
-# TODO move to project root
+from flask_redis import FlaskRedis
 
 db = SQLAlchemy()
 marshmallow = Marshmallow()
+redis_client = FlaskRedis()

@@ -1,20 +1,16 @@
 # print(f'-------------------------------------{__name__}-------------------------------------')
 
 from flask import request, abort, Response, g, jsonify
-from datetime import datetime
 from main.models import User
-from main.schemas import UserSchema
-import main.authentication.basic_http as basic_http
+from main.schemas import UserSchema, LoginSchema
+from main.authentication import basic_http, token_auth
 from . import user_blueprint, decorators
+from extensions import redis_client
 
-from main.configuration.log_utils import init_logger
-import logging
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
 
 api = user_blueprint
 schema = UserSchema()
+login_schema = LoginSchema()
 auth = basic_http.auth
 owner_required = basic_http.user_owner_required
 dump_user = decorators.dump_user
@@ -23,9 +19,6 @@ load_user = decorators.load_user
 """
 CRUD APIs
 """
-
-
-# TODO implement marshmallow dump and load as decorators? or hooks?
 
 
 @api.route('/<id>', methods=['GET'])
@@ -73,6 +66,22 @@ def delete_user(id):
         return jsonify({'status': 200, 'message': 'successful'})
 
 
+@api.route('/login', methods=['GET'])
+@auth.login_required
+def login():
+    """
+    Receives email/pass and if it's validated returns token specific with that user account.
+
+    user can use the token for further access to the system. Consecutive hits replaces the
+    token with a new one with a new expiry of 5 hours
+
+    :return: user's authorization token, if token authentication is used returns a message to user (no token is generated)
+    """
+    if g.token_auth:
+        return jsonify({'message': 'you are already using a token, use basic authentication to receive a new token.'})
+
+    return jsonify({'email': g.current_user.email, 'token': token_auth.login(g.current_user)})
+
 """
 business logic APIs
 """
@@ -92,21 +101,3 @@ def search_user(id):
 before after hooks
 """
 
-
-@api.before_request
-def before_request():
-    request_start = datetime.utcnow()
-    g.request_start = request_start
-    logger.debug(f'before_request for request: {request}')
-
-
-@api.after_request
-def after_request(response: Response):
-    logger.debug(f'after request for response: {response}')
-    logger.info(f'[status: {response.status_code}, '
-                f'method: {request.method}, '
-                f'request: {request.get_data()}, '
-                f'response: {response.response}, '
-                f'starttime: {g.request_start}, '
-                f'endtime: {datetime.utcnow()}]')
-    return response

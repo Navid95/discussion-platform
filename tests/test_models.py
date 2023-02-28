@@ -1,13 +1,9 @@
 from unittest import TestCase
 from main import create_flask_app
 from main.models import User, Topic, Post
-from main.configuration.log_utils import init_logger
-import logging
-from main.extensions import db
+from main.utilities import app_logger as logger
+from extensions import db
 from datetime import datetime, timedelta
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
 
 
 class test_models(TestCase):
@@ -414,6 +410,13 @@ class test_models(TestCase):
         del user2,user
         user3 = User.get(user2_id)
         self.assertIsNone(user3)
+
+    def test_user_token(self):
+        token1 = self.user1.get_token()
+        self.assertTrue(self.user1.validate_token(token1))
+        token2 = self.user1.get_token()
+        self.assertNotEqual(token1, token2)
+        self.assertTrue(self.user1.validate_token(token2))
 
 
 

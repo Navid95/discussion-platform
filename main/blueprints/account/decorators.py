@@ -2,16 +2,18 @@ from functools import wraps
 from main.schemas import UserSchema
 from main.models import User
 from flask import g, request
+from main.utilities import app_logger as logger
 
-from main.configuration.log_utils import init_logger
-import logging
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
 schema = UserSchema()
 
 
 def dump_user(f):
+    """
+    Serializes the return value of the decorated function with the marshmallow schema related to User model
+
+    :param f: function to wrap, probably a view function
+    :return: reference to the wrapper func that dumps the user obj with marshmallow schema
+    """
     @wraps(f)
     def wrap_dump_user(*args, **kwargs):
         logger.debug(f'processing response of {f.__name__}')

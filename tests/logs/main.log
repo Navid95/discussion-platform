@@ -1,6 +1,0 @@
-[2023-02-26 17:19:21,366] - DEBUG - main:create_flask_app - attempting to initialize the app with test configuration ...
-[2023-02-26 17:19:21,369] - INFO - main:create_flask_app - application initialized successfully.
-[2023-02-26 17:19:21,369] - DEBUG - main:create_flask_app - custom configuration added to the application instance.
-[2023-02-26 17:19:21,412] - DEBUG - main.authentication:user_owner_required - decorator user_owner_required intercepted request of get_instance
-[2023-02-26 17:19:21,412] - DEBUG - main.authentication:user_owner_required - decorator user_owner_required intercepted request of search_user
-[2023-02-26 17:19:21,416] - DEBUG - main:create_flask_app - application instance initialization completed

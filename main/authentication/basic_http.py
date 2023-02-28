@@ -2,32 +2,50 @@ from flask import g, abort
 from flask_httpauth import HTTPBasicAuth
 from main.models import User
 from functools import wraps
-
-from main.configuration.log_utils import init_logger
-import logging
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
+from . import token_auth
+from main.utilities import app_logger as logger
 
 auth = HTTPBasicAuth()
 
 
 # TODO develop login module(redis, token generation for each user login)
 
-
 @auth.verify_password
-def verify_password(email, password):
-    logger.debug(f'verifying password for {email}')
+def verify_password(email, password_or_token):
+    """
+    verifies user credentials, if no email is provided fails immediately otherwise first checks token based authentication
+    if no token is found drops to basic authentication (email & password)
+
+    :param email: user account email
+    :param password_or_token: token string or simple password of the account
+    :return: user object in success and aborts(401) on failure
+    """
     if email == '':
-        return False
-    user = User.get_instance(email=email)
-    if not user:
-        return False
-    elif user.verify_password(password):
-        g.current_user = user
-        return user
+        logger.debug(f'no email provided, abort(401)')
+        abort(401)
     else:
-        return False
+        logger.debug(f'authenticating user with email: {email} ...')
+        user = User.get_instance(email=email)
+        if not user:
+            logger.debug(f'no user found with email: {email}, abort(401)')
+            abort(401)
+        else:
+            logger.debug(f'user found with email: {email}, trying token authentication')
+            if token_auth.check_token(user.id,password_or_token):
+                logger.debug(f'user authenticated with email: {email}, token authentication successful')
+                g.current_user = user
+                g.token_auth = True
+                return user
+            else:
+                logger.debug(f'token not found with email: {email}, trying password authentication')
+                if user.verify_password(password_or_token):
+                    logger.debug(f'user authenticated with email: {email}, password authentication successful')
+                    g.current_user = user
+                    g.token_auth = False
+                    return user
+                else:
+                    logger.debug(f'wrong password for user with email: {email}, password authentication failed, abort(401)')
+                    abort(401)
 
 
 def user_owner_required(f):
@@ -42,5 +60,8 @@ def user_owner_required(f):
             logger.debug(f'{decorated_func.__name__} g.current_user: {g.current_user} == {kwargs["id"]}')
             return f(*args, **kwargs)
         else:
+            logger.warning('not the owner of the user')
             abort(401)
+            # return False
+
     return decorated_func

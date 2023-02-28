@@ -1,5 +1,6 @@
-from ..extensions import db
+from extensions import db
 from datetime import datetime
+from main.utilities import app_logger as logger
 
 
 class BaseModel(db.Model):

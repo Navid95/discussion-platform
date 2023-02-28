@@ -1,2 +1,0 @@
-[2023-02-26 17:19:21,412] - DEBUG - main.authentication:user_owner_required - decorator user_owner_required intercepted request of get_instance
-[2023-02-26 17:19:21,412] - DEBUG - main.authentication:user_owner_required - decorator user_owner_required intercepted request of search_user

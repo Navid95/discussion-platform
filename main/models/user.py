@@ -1,15 +1,15 @@
-print(f'-------------------------------------{__name__}----------------------------------------------')
+# print(f'-------------------------------------{__name__}----------------------------------------------')
 
-from main.extensions import db
+from extensions import db
 from main.models.base_model import BaseModel
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
+from main.utilities import app_logger as logger
+from datetime import datetime, timedelta
+from time import time
+from flask import current_app
+import jwt
 
-from main.configuration.log_utils import init_logger
-import logging
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
 
 # TODO all custom configs should be created at app initialization in json format
 
@@ -17,6 +17,7 @@ TOKEN_EXP_KEY = 'exp'
 TOKEN_SENDER_KEY = 'sender'
 TOKEN_RECEIVER_KEY = 'receiver'
 TOKEN_TOPIC_KEY = 'topic_id'
+TOKEN_GEN_TIME = 'gen_time'
 
 user_follows = db.Table('user_follows',
                         db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -197,21 +198,32 @@ class User(BaseModel):
         else:
             return False
 
+    def get_token(self, expiration=None):
+        raw_token = dict()
+        raw_token[TOKEN_SENDER_KEY] = self.id
+        return encode_token(raw_token, expiration)
+
+    def validate_token(self, token):
+        raw_token = decode_token(token)
+        if raw_token.get(TOKEN_SENDER_KEY) != self.id:
+            return False
+        else:
+            return True
+
 
 """
 functions
 """
 
-# def encode_token(raw_token, expiration=3600):
-#     # import discussion
-#     # app = discussion.app
-#     raw_token[TOKEN_EXP_KEY] = datetime.now() + timedelta(seconds=expiration)
-#     return jwt.encode(payload=raw_token, key='discussion app secret key',
-#                       algorithm='HS256')
-#
-#
-# def decode_token(token):
-#     import discussion
-#     app = discussion.app
-#     return jwt.decode(jwt=token, key='discussion app secret key',
-#                       algorithms='HS256')
+
+def encode_token(raw_token, expiration=None):
+    if expiration:
+        raw_token[TOKEN_EXP_KEY] = datetime.now() + timedelta(seconds=expiration)
+    raw_token[TOKEN_GEN_TIME] = time()
+    return jwt.encode(payload=raw_token, key=current_app.config['SECRET_KEY'],
+                      algorithm=current_app.config['CUSTOM_ENCRYPTION_ALGO'])
+
+
+def decode_token(token):
+    return jwt.decode(jwt=token, key=current_app.config['SECRET_KEY'],
+                      algorithms=current_app.config['CUSTOM_ENCRYPTION_ALGO'])

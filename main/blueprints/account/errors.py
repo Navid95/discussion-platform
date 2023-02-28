@@ -1,21 +1,17 @@
-from discussion import app
 from flask import request, jsonify
-
-from main.configuration.log_utils import init_logger
-import logging
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
+from werkzeug.exceptions import HTTPException
+from main.utilities import app_logger, exception_logger
+from . import user_blueprint
 
 
-@app.errorhandler(404)
+@user_blueprint.app_errorhandler(404)
 def page_not_found(e):
     response = jsonify({'error': 'not found'})
     response.status_code = 404
-    return response
+    return response, 404
 
 
-@app.errorhandler(500)
+@user_blueprint.app_errorhandler(500)
 def internal_server_error(e):
     response = jsonify({'error': 'internal server error'})
     response.status_code = 500
@@ -28,15 +24,17 @@ def forbidden(message):
     return response
 
 
-@app.errorhandler(401)
+@user_blueprint.app_errorhandler(401)
 def unauthorized(e):
-    logger.debug(f'unauthorized access')
-    response = jsonify({'error': 'unauthorized access'})
-    request.status_code = 401
+    response = jsonify({'error': '401 Unauthorized Access'})
+    app_logger.error(e)
+    app_logger.error(response)
+    # request.status_code = 401
+    # response.content_type = "application/json"
     return response
 
 
-@app.errorhandler(400)
+@user_blueprint.app_errorhandler(400)
 def page_not_found(e):
     response = jsonify({'error': 'Bad Request'})
     response.status_code = 400

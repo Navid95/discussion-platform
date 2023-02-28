@@ -1,13 +1,9 @@
-print(f'-------------------------------------{__name__}----------------------------------------------')
+# print(f'-------------------------------------{__name__}----------------------------------------------')
 
-from ..extensions import marshmallow as ma
+from extensions import marshmallow as ma
 from ..models import User
 from marshmallow import post_load, fields
-import logging
-from main.configuration.log_utils import init_logger
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
+from main.utilities import app_logger as logger
 
 
 class UserSchema(ma.SQLAlchemySchema):
@@ -23,3 +19,11 @@ class UserSchema(ma.SQLAlchemySchema):
     @post_load
     def make_user(self, data, **kwargs):
         return User(**data)
+
+
+class LoginCredentials(ma.Schema):
+    """
+    marshmallow schema representing the email/token and password fields
+    """
+    email_token = fields.String(load_only=True)
+    password = fields.String(required=False, load_only=True)

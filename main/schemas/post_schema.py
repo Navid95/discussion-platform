@@ -1,12 +1,9 @@
 print(f'-------------------------------------{__name__}----------------------------------------------')
 
-from ..extensions import marshmallow as ma
+from extensions import marshmallow as ma
 from ..models import Post
 import logging
-from main.configuration.log_utils import init_logger
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
+from main.utilities import app_logger as logger
 
 
 class PostSchema(ma.SQLAlchemySchema):
