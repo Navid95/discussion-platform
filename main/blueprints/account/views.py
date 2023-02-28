@@ -82,6 +82,21 @@ def login():
 
     return jsonify({'email': g.current_user.email, 'token': token_auth.login(g.current_user)})
 
+
+@api.route('/logout', methods=['GET'])
+@auth.login_required
+def logout():
+    """
+    logs out the user if it is using token authentication (token gets removed and will not be valid anymore)
+
+    :return: result, if token authentication is not used returns a message to user (no token is removed)
+    """
+    if not g.token_auth:
+        return jsonify({'message': 'you are not logged in using a token.'})
+    else:
+        return jsonify({'result': token_auth.logout(g.current_user.id)})
+
+
 """
 business logic APIs
 """

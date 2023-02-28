@@ -52,7 +52,6 @@ setex(name, time, value)
 
 """
 
-from flask import jsonify
 from extensions import redis_client
 from main.utilities import app_logger as logger
 
@@ -106,4 +105,5 @@ def logout(user_id):
     :param user_id: id of the user that is logging out
     :return: boolean
     """
+    redis_client.delete(f'user.{user_id}')
     return True
