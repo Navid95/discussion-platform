@@ -8,8 +8,6 @@ from main.utilities import app_logger as logger
 auth = HTTPBasicAuth()
 
 
-# TODO develop login module(redis, token generation for each user login)
-
 @auth.verify_password
 def verify_password(email, password_or_token):
     """

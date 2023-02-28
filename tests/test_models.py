@@ -370,9 +370,9 @@ class test_models(TestCase):
 
     def test_invite(self):
         self.user2.invite_user_to_topic(self.user4, self.topic2)
-        self.assertTrue(self.user4.is_in_waiting_list(self.topic2))
+        self.assertTrue(self.user4.has_in_waiting_list(self.topic2))
         user = User.get_instance(self.user4.id)
-        self.assertTrue(user.is_in_waiting_list(self.topic2))
+        self.assertTrue(user.has_in_waiting_list(self.topic2))
 
     def test_user_base(self):
         user = User(email='name1@email.com', password='1234')

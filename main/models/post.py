@@ -114,18 +114,3 @@ class Post(BaseModel):
             logger.exception(f'exception in deleting User with id={id}. Trying to rollback')
             db.session.rollback()
             return False
-
-
-"""
-marshmallow schema
-"""
-
-# class PostSchema(ma.SQLAlchemySchema):
-#     class Meta:
-#         model = Post
-#         include_fk = True
-#
-#     id = ma.auto_field()
-#     content = ma.auto_field()
-#     topic_id = ma.auto_field()
-#     author_id = ma.auto_field()

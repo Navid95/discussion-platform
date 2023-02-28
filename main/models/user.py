@@ -10,7 +10,6 @@ from time import time
 from flask import current_app
 import jwt
 
-
 # TODO all custom configs should be created at app initialization in json format
 
 TOKEN_EXP_KEY = 'exp'
@@ -36,9 +35,9 @@ class User(BaseModel):
     password_hash = db.Column(db.String(100), nullable=False)
 
     topics = db.relationship('Topic', backref='owner', lazy='dynamic', collection_class=list)
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
     follows = db.relationship('Topic', secondary=user_follows, backref='followers')
     waiting_accept = db.relationship('Topic', secondary=user_waiting_acceptance, backref='invites')
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __init__(self, email, password, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -167,34 +166,91 @@ class User(BaseModel):
     business logic
     """
 
-    def follow_topic(self, topic):
-        if not self.has_followed(topic):
-            self.follows.append(topic)
-            db.session.add(self)
-            db.session.commit()
+    def init_topic(self, topic):
+        """
+        user initiates a new topic. user will be the owner
+        of the topic and also the topic will be added to the users \"follows\" list
+
+        :param topic: topic object to be initiated by user
+        :return: boolean
+        """
+        if not self.owns_topic(topic) and topic.owner_id is None:
+            try:
+                self.topics.append(topic)
+                self.follow_topic(topic=topic)
+                db.session.add(self)
+                db.session.commit()
+                return True
+            except BaseException as e:
+                logger.exception(e)
+                return False
         else:
             return False
 
-    def init_topic(self, topic):
-        self.topics.append(topic)
-        self.follow_topic(topic=topic)
-        db.session.add(self)
-        db.session.commit()
+    # TODO add validation to check if topic already has an owner or not
+    def follow_topic(self, topic):
+        """
+        user accepts an invitation to follow a topic. topic should not be already
+        in user's follows list and should be in user's waiting_accept list.
+
+        :param topic: the topic object to follow
+        :return: boolean
+        """
+        if not self.has_followed(topic) and topic in self.waiting_accept:
+            try:
+                self.follows.append(topic)
+                db.session.add(self)
+                db.session.commit()
+                return True
+            except BaseException as e:
+                logger.exception(e)
+                return False
+        else:
+            return False
 
     def has_followed(self, topic):
+        """
+        checks if user follows the given topic or not.
+        :param topic: the topic object to look for
+        :return: boolean
+        """
         return topic in self.follows
 
     def owns_topic(self, topic):
+        """
+        checks if given topic is in the user's topics list, which means this user is the owner of the topic
+        :param topic: the topic object to look for
+        :return: boolean
+        """
         return topic in self.topics
 
-    def is_in_waiting_list(self, topic):
+    def has_in_waiting_list(self, topic):
+        """
+        checks if given topic is in users waiting_accept list or not
+        :param topic: the topic object to look for
+        :return: boolean
+        """
         return topic in self.waiting_accept
 
     def invite_user_to_topic(self, user, topic):
-        if self.owns_topic(topic) and not user.has_followed(topic) and not user.is_in_waiting_list(topic):
-            user.waiting_accept.append(topic)
-            db.session.add(user)
-            db.session.commit()
+        """
+        this user object invites another user to follow the topic given.
+        this user should be the owner of te topic and the second user should not have
+        the topic in its waiting_accept or follows list.
+
+        :param user: the user object to be invited to topic
+        :param topic: the topic object
+        :return: boolean
+        """
+        if self.owns_topic(topic) and not user.has_followed(topic) and not user.has_in_waiting_list(topic):
+            try:
+                user.waiting_accept.append(topic)
+                db.session.add(user)
+                db.session.commit()
+                return True
+            except BaseException as e:
+                logger.exception(e)
+                return False
         else:
             return False
 
@@ -210,6 +266,8 @@ class User(BaseModel):
         else:
             return True
 
+
+# TODO to add business logic
 
 """
 functions

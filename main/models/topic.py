@@ -3,7 +3,7 @@ print(f'-------------------------------------{__name__}-------------------------
 from extensions import db
 from sqlalchemy.exc import IntegrityError
 from .base_model import BaseModel
-from main.utilities import app_logger as logger
+from main.utilities import app_logger as logger, exception_logger
 
 
 class Topic(BaseModel):
@@ -122,25 +122,29 @@ class Topic(BaseModel):
     business logic
     """
 
+    def has_post(self, post):
+        """
+        checks if given post is in this topic's posts list
+        :param post: the post object to look for
+        :return: boolean
+        """
+        return post in self.posts
+
     def add_post(self, post):
-        self.posts.append(post)
-        db.session.add(self)
-        db.session.commit()
+        """
+        adds the given post object to this topic's posts' list
 
-
-"""
-marshmallow schema
-"""
-
-# class TopicSchema(ma.SQLAlchemySchema):
-#     # from .post import PostSchema
-#     # from .user import UserSchema
-#
-#     class Meta:
-#         model = Topic
-#         include_fk = True
-#
-#     id = ma.auto_field()
-#     title = ma.auto_field()
-#     owner_id = ma.auto_field()
-#     posts = ma.Nested(model.PostSchema, many=True)
+        :param post: the post object to add
+        :return: boolean
+        """
+        try:
+            if not self.has_post(post) and post.topic_id is None:
+                self.posts.append(post)
+                db.session.add(self)
+                db.session.commit()
+                return True
+            else:
+                return False
+        except BaseException as e:
+            logger.exception(e)
+            return False
