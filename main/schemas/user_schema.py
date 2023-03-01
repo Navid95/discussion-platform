@@ -1,7 +1,7 @@
 # print(f'-------------------------------------{__name__}----------------------------------------------')
 
 from extensions import marshmallow as ma
-from ..models import User
+from main.models import User
 from marshmallow import post_load, fields
 from main.utilities import app_logger as logger
 

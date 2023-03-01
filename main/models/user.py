@@ -4,7 +4,7 @@ from extensions import db
 from main.models.base_model import BaseModel
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
-from main.utilities import app_logger as logger
+from main.utilities import app_logger as logger, exception_logger
 from datetime import datetime, timedelta
 from time import time
 from flask import current_app
@@ -187,7 +187,6 @@ class User(BaseModel):
         else:
             return False
 
-    # TODO add validation to check if topic already has an owner or not
     def follow_topic(self, topic):
         """
         user accepts an invitation to follow a topic. topic should not be already
@@ -202,6 +201,27 @@ class User(BaseModel):
                 db.session.add(self)
                 db.session.commit()
                 return True
+            except BaseException as e:
+                logger.exception(e)
+                return False
+        else:
+            return False
+
+    def reject_invitation(self, topic):
+        """
+        this user rejects an invitation to follow a topic. if present the
+        topic object will be removed from user's waiting_accpet list.
+
+        :param topic: the topic object to remove
+        :return: boolean
+        """
+        if not self.has_followed(topic) and topic in self.waiting_accept:
+            try:
+                self.waiting_accept.remove(topic)
+                db.session.add(self)
+                db.session.commit()
+                return True
+
             except BaseException as e:
                 logger.exception(e)
                 return False
@@ -254,6 +274,33 @@ class User(BaseModel):
         else:
             return False
 
+    def add_post(self, post, topic):
+        """
+
+        this user adds given post under the given topic. user is only allowed to
+        do so if he/she is the topic owner or has the topic in their follows list
+
+        :param post: the post object to be added
+        :param topic: the topic object that post is being added to
+        :return: boolean
+        """
+        if self.owns_topic(topic) or self.has_followed(topic):
+            if topic.add_post(post):
+                try:
+                    self.posts.append(post)
+                    db.session.add(self)
+                    db.session.commit()
+
+                    return True
+                except BaseException as e:
+                    exception_logger.exception(e)
+                    return False
+            else:
+                return False
+        else:
+            return False
+
+
     def get_token(self, expiration=None):
         raw_token = dict()
         raw_token[TOKEN_SENDER_KEY] = self.id
@@ -266,8 +313,6 @@ class User(BaseModel):
         else:
             return True
 
-
-# TODO to add business logic
 
 """
 functions

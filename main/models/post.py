@@ -1,4 +1,4 @@
-print(f'-------------------------------------{__name__}----------------------------------------------')
+# print(f'-------------------------------------{__name__}----------------------------------------------')
 
 from extensions import db
 from sqlalchemy.exc import IntegrityError
@@ -114,3 +114,15 @@ class Post(BaseModel):
             logger.exception(f'exception in deleting User with id={id}. Trying to rollback')
             db.session.rollback()
             return False
+
+    """
+    business logic
+    """
+
+    def is_new(self):
+        """
+        Checks if this post is new, which means it is not persisted to db so it should not have author, topic and database id.
+        this method is used to determine that no topic gets reassigned from a topic and/or author
+        :return: boolean
+        """
+        return self.author_id is None and self.topic_id is None and self.id is None

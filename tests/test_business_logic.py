@@ -90,6 +90,23 @@ class TestBusiness(TestCase):
 
         self.assertTrue(topic1 in User.get(user2.id).waiting_accept)
 
+    def test_user_reject_invitation(self):
+        user1 = User(email='user1@email.com', password='1234')
+        topic1 = Topic(title='title1')
+        user1.waiting_accept.append(topic1)
+
+        db.session.add(user1)
+        db.session.commit()
+
+        self.assertTrue(User.get(user1.id).reject_invitation(topic1))
+
+        topic1.owner_id = user1.id
+
+        db.session.add(user1)
+        db.session.commit()
+
+        self.assertFalse(User.get(user1.id).reject_invitation(topic1))
+
     def test_topic_has_post(self):
         topic1 = Topic(title='title1')
         post1 = Post(content='content1')
@@ -112,4 +129,50 @@ class TestBusiness(TestCase):
 
         self.assertTrue(Topic.get(topic1.id).has_post(post1))
         self.assertFalse(Topic.get(topic2.id).add_post(post1))
+
+    def test_post_is_new(self):
+        post = Post(content='content1')
+        self.assertTrue(post.is_new())
+        post.author_id = 1
+        self.assertFalse(post.is_new())
+        post.author_id = None
+        self.assertTrue(post.is_new())
+        post.topic_id = 1
+        self.assertFalse(post.is_new())
+        post.topic_id = None
+        self.assertTrue(post.is_new())
+
+        db.session.add(post)
+        db.session.commit()
+
+        self.assertFalse(Post.get(post.id).is_new())
+
+    def test_user_add_post(self):
+        user1 = User(email='user1@email.com', password='1234')
+        topic1 = Topic(title='title1')
+        post1 = Post(content='content1')
+        self.assertFalse(user1.add_post(post1, topic1))
+        user1.init_topic(topic1)
+        self.assertTrue(user1.add_post(post1, topic1))
+        self.assertEqual(post1.topic_id, topic1.id)
+        self.assertEqual(post1.author_id, user1.id)
+
+        user2 = User(email='user2@email.com', password='1234')
+        post2 = Post(content='content2')
+
+        user1.invite_user_to_topic(user2, topic1)
+        user2.follow_topic(topic1)
+        self.assertTrue(user2.add_post(post2, topic1))
+        self.assertEqual(post2.topic_id, topic1.id)
+        self.assertEqual(post2.author_id, user2.id)
+
+        db.session.add_all([user1, user2])
+        db.session.commit()
+
+        self.assertEqual(Post.get(post1.id).topic_id, Post.get(post2.id).topic_id)
+
+
+
+
+
 

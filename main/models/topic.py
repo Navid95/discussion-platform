@@ -138,7 +138,7 @@ class Topic(BaseModel):
         :return: boolean
         """
         try:
-            if not self.has_post(post) and post.topic_id is None:
+            if not self.has_post(post) and post.is_new():
                 self.posts.append(post)
                 db.session.add(self)
                 db.session.commit()
