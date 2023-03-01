@@ -2,6 +2,9 @@ from flask import request, jsonify
 from main.utilities import app_logger, exception_logger
 from main.blueprints.default import default
 
+# TODO add all general http errors
+# TODO add custom result code, messages
+
 
 @default.app_errorhandler(404)
 def page_not_found(e):

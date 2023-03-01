@@ -1,6 +1,6 @@
 from flask import g, abort
 from flask_httpauth import HTTPBasicAuth
-from main.models import User
+from main.models import User, Topic
 from functools import wraps
 from . import token_auth
 from main.utilities import app_logger as logger
@@ -51,9 +51,7 @@ def user_owner_required(f):
 
     @wraps(f)
     def decorated_func(*args, **kwargs):
-        logger.debug(f'{decorated_func.__name__} received *args: {args} and **kwargs: {kwargs}')
         id = kwargs['id']
-        logger.debug(f'{decorated_func.__name__} has g.current_user: {g.current_user}')
         if int(g.current_user.id) == int(id):
             logger.debug(f'{decorated_func.__name__} g.current_user: {g.current_user} == {kwargs["id"]}')
             return f(*args, **kwargs)
@@ -63,3 +61,18 @@ def user_owner_required(f):
             # return False
 
     return decorated_func
+
+
+def topic_owner_required(f):
+
+    @wraps(f)
+    def check_owner(*args, **kwargs):
+        topic_id = kwargs['topic_id']
+        if g.current_user.owns_topic(Topic.get(topic_id)):
+            logger.debug(f'{check_owner.__name__} g.current_user: {g.current_user} owns Topic id: {topic_id}')
+            return f(*args, **kwargs)
+        else:
+            logger.warning('not the owner of the topic')
+            abort(401)
+
+    return check_owner

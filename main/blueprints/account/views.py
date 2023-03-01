@@ -60,10 +60,18 @@ def update_user(id):
 
 @api.route('/<id>', methods=['DELETE'])
 @auth.login_required
+@owner_required
 @load_user
 def delete_user(id):
     if User.delete(id):
         return jsonify({'status': 200, 'message': 'successful'})
+
+    return jsonify({'status': 400, 'message': 'failed'})
+
+
+"""
+business logic APIs
+"""
 
 
 @api.route('/login', methods=['GET'])
@@ -97,22 +105,11 @@ def logout():
         return jsonify({'result': token_auth.logout(g.current_user.id)})
 
 
-"""
-business logic APIs
-"""
-
-
-@api.route('/', methods=['GET'])
-def search_user(id):
-    """
-    Search API with URI string filters
-    :param id:
-    :return:
-    """
-    pass
-
-
-"""
-before after hooks
-"""
-
+# @api.route('/', methods=['GET'])
+# def search_user(id):
+#     """
+#     Search API with URI string filters
+#     :param id:
+#     :return:
+#     """
+#     pass

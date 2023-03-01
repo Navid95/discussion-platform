@@ -10,9 +10,14 @@ class UserSchema(ma.SQLAlchemySchema):
     class Meta:
         model = User
 
+    # TODO sort the dump fields
     id = fields.Integer(dump_only=True)
     email = fields.Email(required=True)
     password = fields.String(load_only=True)
+    topics = ma.auto_field(dump_only=True)
+    posts = ma.auto_field(dump_only=True)
+    follows = ma.auto_field(dump_only=True)
+    waiting_accept = ma.auto_field(dump_only=True)
 
     # topics = fields.List(fields.Nested(topic_schema.TopicSchema))
 

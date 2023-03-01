@@ -13,7 +13,7 @@ class Topic(BaseModel):
     title = db.Column(db.String(64), unique=True, index=True)
 
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    posts = db.relationship('Post', backref='topic', lazy='dynamic')
+    posts = db.relationship('Post', backref='topic')
 
     def __repr__(self):
         return {'id': self.id,

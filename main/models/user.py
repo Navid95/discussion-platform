@@ -34,8 +34,8 @@ class User(BaseModel):
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(100), nullable=False)
 
-    topics = db.relationship('Topic', backref='owner', lazy='dynamic', collection_class=list)
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
+    topics = db.relationship('Topic', backref='owner', collection_class=list)
+    posts = db.relationship('Post', backref='author')
     follows = db.relationship('Topic', secondary=user_follows, backref='followers')
     waiting_accept = db.relationship('Topic', secondary=user_waiting_acceptance, backref='invites')
 
@@ -215,7 +215,8 @@ class User(BaseModel):
         :param topic: the topic object to remove
         :return: boolean
         """
-        if not self.has_followed(topic) and topic in self.waiting_accept:
+        # if not self.has_followed(topic) and topic in self.waiting_accept:
+        if topic in self.waiting_accept:
             try:
                 self.waiting_accept.remove(topic)
                 db.session.add(self)
