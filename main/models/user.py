@@ -245,6 +245,14 @@ class User(BaseModel):
         """
         return topic in self.topics
 
+    def owns_post(self, post):
+        """
+        checks if given post is in the user's posts list, which means this user is the author of the post
+        :param post: the post object to look for
+        :return: boolean
+        """
+        return post in self.posts
+
     def has_in_waiting_list(self, topic):
         """
         checks if given topic is in users waiting_accept list or not

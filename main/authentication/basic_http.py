@@ -1,6 +1,6 @@
 from flask import g, abort
 from flask_httpauth import HTTPBasicAuth
-from main.models import User, Topic
+from main.models import User, Topic, Post
 from functools import wraps
 from . import token_auth
 from main.utilities import app_logger as logger
@@ -76,3 +76,20 @@ def topic_owner_required(f):
             abort(401)
 
     return check_owner
+
+
+def post_owner_required(f):
+
+    @wraps(f)
+    def check_owner(*args, **kwargs):
+        post_id = kwargs['post_id']
+        if g.current_user.owns_post(Post.get(post_id)):
+            logger.debug(f'{check_owner.__name__} g.current_user: {g.current_user} owns Post id: {post_id}')
+            return f(*args, **kwargs)
+        else:
+            logger.warning('not the owner of the post')
+            abort(401)
+
+    return check_owner
+
+

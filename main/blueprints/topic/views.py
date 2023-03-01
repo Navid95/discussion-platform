@@ -59,7 +59,7 @@ def invite_user_to_topic(topic_id, user_id):
     abort(400)
 
 
-@api.route('/<topic_id>/addpost', methods=['PUT'])
+@api.route('/<topic_id>/post', methods=['PUT'])
 @auth.login_required
 @dump_topic
 def add_post(topic_id):
@@ -76,21 +76,21 @@ CRUD APIs
 """
 
 
-@api.route('/<id>', methods=['GET'])
+@api.route('/<topic_id>', methods=['GET'])
 @auth.login_required
 @dump_topic
-def get_by_id(id):
-    return Topic.get(id=id)
+def get_by_id(topic_id):
+    return Topic.get(id=topic_id)
 
 
-@api.route('/<id>', methods=['PUT', 'PATCH'])
+@api.route('/<topic_id>', methods=['PUT', 'PATCH'])
 @auth.login_required
 @owner_required
 @dump_topic
-def update_topic(id):
+def update_topic(topic_id):
     json_raw = request.get_json()
     updated_topic = schema.load(json_raw)
-    old_topic = Topic.get(id)
+    old_topic = Topic.get(topic_id)
     old_topic.title = updated_topic.title
     result = Topic.update(old_topic)
     if result:
@@ -99,10 +99,10 @@ def update_topic(id):
         abort(400)
 
 
-@api.route('/<id>', methods=['DELETE'])
+@api.route('/<topic_id>', methods=['DELETE'])
 @auth.login_required
 @owner_required
-def delete_topic(id):
-    if Topic.delete(id):
+def delete_topic(topic_id):
+    if Topic.delete(topic_id):
         return jsonify({'status': 200, 'message': 'successful'})
     return abort(400)

@@ -4,9 +4,12 @@ from extensions import marshmallow as ma
 from main.models import User
 from marshmallow import post_load, fields
 from main.utilities import app_logger as logger
+from . import BaseSchema
 
 
-class UserSchema(ma.SQLAlchemySchema):
+class UserSchema(ma.SQLAlchemySchema, BaseSchema):
+    name = 'user'
+
     class Meta:
         model = User
 

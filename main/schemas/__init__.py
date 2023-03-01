@@ -1,8 +1,14 @@
 print(f'-------------------------------------{__name__}----------------------------------------------')
 
-from . import user_schema, topic_schema, post_schema
+from . import base_schema
+BaseSchema = base_schema.BaseSchema
 
-UserSchema = user_schema.UserSchema
+from . import topic_schema
 TopicSchema = topic_schema.TopicSchema
+
+from . import post_schema
 PostSchema = post_schema.PostSchema
+
+from . import user_schema
+UserSchema = user_schema.UserSchema
 LoginSchema = user_schema.LoginCredentials
