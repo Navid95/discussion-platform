@@ -3,7 +3,7 @@ from main.utilities import api_logger
 from flask import request, Response, g
 from time import time
 
-print(f'-----------------------------------{__name__}-----------------------------------')
+# print(f'-----------------------------------{__name__}-----------------------------------')
 
 
 @default.before_app_request

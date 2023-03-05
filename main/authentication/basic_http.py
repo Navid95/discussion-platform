@@ -1,11 +1,15 @@
-from flask import g, abort
+from flask import g, abort, session
 from flask_httpauth import HTTPBasicAuth
 from main.models import User, Topic, Post
 from functools import wraps
 from . import token_auth
 from main.utilities import app_logger as logger
 
+from flask_jwt_extended import current_user
+
 auth = HTTPBasicAuth()
+
+# TODO change from basic auth and get params in body
 
 
 @auth.verify_password
@@ -18,6 +22,7 @@ def verify_password(email, password_or_token):
     :param password_or_token: token string or simple password of the account
     :return: user object in success and aborts(401) on failure
     """
+
     if email == '':
         logger.debug(f'no email provided, abort(401)')
         abort(401)
@@ -52,8 +57,8 @@ def user_owner_required(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
         id = kwargs['id']
-        if int(g.current_user.id) == int(id):
-            logger.debug(f'{decorated_func.__name__} g.current_user: {g.current_user} == {kwargs["id"]}')
+        if int(current_user.id) == int(id):
+            logger.debug(f'{decorated_func.__name__} current_user: {current_user} == {kwargs["id"]}')
             return f(*args, **kwargs)
         else:
             logger.warning('not the owner of the user')
@@ -68,8 +73,8 @@ def topic_owner_required(f):
     @wraps(f)
     def check_owner(*args, **kwargs):
         topic_id = kwargs['topic_id']
-        if g.current_user.owns_topic(Topic.get(topic_id)):
-            logger.debug(f'{check_owner.__name__} g.current_user: {g.current_user} owns Topic id: {topic_id}')
+        if current_user.owns_topic(Topic.get(topic_id)):
+            logger.debug(f'{check_owner.__name__} current_user: {current_user} owns Topic id: {topic_id}')
             return f(*args, **kwargs)
         else:
             logger.warning('not the owner of the topic')
@@ -83,8 +88,8 @@ def post_owner_required(f):
     @wraps(f)
     def check_owner(*args, **kwargs):
         post_id = kwargs['post_id']
-        if g.current_user.owns_post(Post.get(post_id)):
-            logger.debug(f'{check_owner.__name__} g.current_user: {g.current_user} owns Post id: {post_id}')
+        if current_user.owns_post(Post.get(post_id)):
+            logger.debug(f'{check_owner.__name__} current_user: {current_user} owns Post id: {post_id}')
             return f(*args, **kwargs)
         else:
             logger.warning('not the owner of the post')

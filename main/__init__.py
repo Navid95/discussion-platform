@@ -3,9 +3,8 @@
 from flask import Flask
 import conf
 from main.utilities import app_logger as logger
-from extensions import db, marshmallow, redis_client
-from main.middleware.custom_http_middleware import HTTPCustomMiddleware
-from flask_http_middleware import MiddlewareManager
+from extensions import db, marshmallow, redis_client, jwt
+
 
 config = conf.config
 
@@ -42,6 +41,7 @@ def create_flask_app(config_name='default'):
     db.init_app(app)
     marshmallow.init_app(app)
     redis_client.init_app(app, decode_responses=True)
+    jwt.init_app(app)
 
     """
     Adding middlewares

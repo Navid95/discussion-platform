@@ -17,10 +17,12 @@ class UserSchema(ma.SQLAlchemySchema, BaseSchema):
     id = fields.Integer(dump_only=True)
     email = fields.Email(required=True)
     password = fields.String(load_only=True)
-    topics = ma.auto_field(dump_only=True)
-    posts = ma.auto_field(dump_only=True)
-    follows = ma.auto_field(dump_only=True)
-    waiting_accept = ma.auto_field(dump_only=True)
+
+    # TODO return full jsons or nothing // Think about URLS as mentioned in REST Spec
+    # topics = ma.auto_field(dump_only=True)
+    # posts = ma.auto_field(dump_only=True)
+    # follows = ma.auto_field(dump_only=True)
+    # waiting_accept = ma.auto_field(dump_only=True)
 
     # topics = fields.List(fields.Nested(topic_schema.TopicSchema))
 
@@ -33,5 +35,5 @@ class LoginCredentials(ma.Schema):
     """
     marshmallow schema representing the email/token and password fields
     """
-    email_token = fields.String(load_only=True)
+    email = fields.String(load_only=True)
     password = fields.String(required=False, load_only=True)

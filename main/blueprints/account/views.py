@@ -1,20 +1,25 @@
-# print(f'-------------------------------------{__name__}-------------------------------------')
 
 from flask import request, abort, Response, g, jsonify
+from datetime import datetime, timedelta
+from main.utilities import NoUserFound
+from extensions import redis_client
 from main.models import User
 from main.schemas import UserSchema, LoginSchema
-from main.authentication import basic_http, token_auth
+from main.authentication import jwt, load_login_data, validate_login_credentials_post, user_owner_required
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt, get_current_user, current_user
+from main.blueprints.default.errors import error
+
 from . import user_blueprint, decorators
-from extensions import redis_client
 
 
 api = user_blueprint
 schema = UserSchema()
 login_schema = LoginSchema()
-auth = basic_http.auth
-owner_required = basic_http.user_owner_required
+owner_required = user_owner_required
 dump_user = decorators.dump_user
 load_user = decorators.load_user
+
+ACCESS_EXPIRES = timedelta(hours=1)
 
 """
 CRUD APIs
@@ -22,7 +27,7 @@ CRUD APIs
 
 
 @api.route('/<id>', methods=['GET'])
-@auth.login_required
+@jwt_required()
 @owner_required
 @dump_user
 def get_by_id(id):
@@ -39,27 +44,27 @@ def create_user():
     if result:
         return new_user
     else:
-        abort(400)
+        return jsonify({'error': 'failed'})
 
 
-@api.route('/<id>', methods=['PUT', 'PATCH'])
-@auth.login_required
+@api.route('/<id>', methods=['PATCH'])
+@jwt_required()
 @owner_required
 @dump_user
 def update_user(id):
     json_raw = request.get_json()
     new_user = schema.load(json_raw)
-    g.current_user.email = new_user.email
-    g.current_user.password_hash = new_user.password_hash
-    result = User.update(g.current_user)
+    current_user.email = new_user.email
+    current_user.password_hash = new_user.password_hash
+    result = User.update(current_user)
     if result:
-        return g.current_user
+        return current_user
     else:
         abort(400)
 
 
 @api.route('/<id>', methods=['DELETE'])
-@auth.login_required
+@jwt_required()
 @owner_required
 @load_user
 def delete_user(id):
@@ -74,42 +79,45 @@ business logic APIs
 """
 
 
-@api.route('/login', methods=['GET'])
-@auth.login_required
+@api.route('/login', methods=['POST'])
+@load_login_data
 def login():
     """
-    Receives email/pass and if it's validated returns token specific with that user account.
+    Receives email/pass and if it's validated returns jwt-token specific with that user account.
 
-    user can use the token for further access to the system. Consecutive hits replaces the
-    token with a new one with a new expiry of 5 hours
+    user can use the token for further access to the system.
 
-    :return: user's authorization token, if token authentication is used returns a message to user (no token is generated)
+    :return: user's authorization token
     """
-    if g.token_auth:
-        return jsonify({'message': 'you are already using a token, use basic authentication to receive a new token.'})
+    user_credentials = dict()
+    user_credentials.update(g.input_data)
+    try:
+        if validate_login_credentials_post(user_credentials['email'], user_credentials['password']):
+            token = create_access_token(identity=g.current_user)
+            return jsonify(access_token=token)
+    except NoUserFound as e:
+        abort(401)
+    except BaseException as e:
+        abort(500)
 
-    return jsonify({'email': g.current_user.email, 'token': token_auth.login(g.current_user)})
 
-
-@api.route('/logout', methods=['GET'])
-@auth.login_required
+@api.route('/logout', methods=['DELETE'])
+@jwt_required()
 def logout():
     """
     logs out the user if it is using token authentication (token gets removed and will not be valid anymore)
 
     :return: result, if token authentication is not used returns a message to user (no token is removed)
     """
-    if not g.token_auth:
-        return jsonify({'message': 'you are not logged in using a token.'})
+    if get_jwt():
+        jti = get_jwt()['jti']
+        redis_client.set(name=jti,value='',ex=ACCESS_EXPIRES)
+        return jsonify(message='token revoked successfully')
     else:
-        return jsonify({'result': token_auth.logout(g.current_user.id)})
+        return jsonify({'message': 'no token provided'})
 
 
-# @api.route('/', methods=['GET'])
-# def search_user(id):
-#     """
-#     Search API with URI string filters
-#     :param id:
-#     :return:
-#     """
-#     pass
+@api.route('/test', methods=['GET'])
+def test():
+    return jsonify(message='hara kiri?')
+

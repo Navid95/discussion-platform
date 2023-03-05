@@ -5,6 +5,7 @@ from main.models.base_model import BaseModel
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from main.utilities import app_logger as logger, exception_logger
+from main.utilities import NoUserFound
 from datetime import datetime, timedelta
 from time import time
 from flask import current_app
@@ -118,7 +119,6 @@ class User(BaseModel):
             db.session.rollback()
             return False
 
-    # TODO check why simple python assignment on a field (exp. email) changes the db row (test_models.test_user_crud Update section)
     @staticmethod
     def update_instance(instance):
         pass
@@ -146,7 +146,11 @@ class User(BaseModel):
             return False
 
     def get(id):
-        return User.query.filter_by(id=id).first()
+        user = User.query.filter_by(id=id).first()
+        if user is not None:
+            return user
+        else:
+            raise NoUserFound('No user found with given id')
 
     # TODO search best practices for update api
     def update(instance):
@@ -177,7 +181,7 @@ class User(BaseModel):
         if not self.owns_topic(topic) and topic.owner_id is None:
             try:
                 self.topics.append(topic)
-                self.follow_topic(topic=topic)
+                self.follows.append(topic)
                 db.session.add(self)
                 db.session.commit()
                 return True
@@ -232,6 +236,7 @@ class User(BaseModel):
     def has_followed(self, topic):
         """
         checks if user follows the given topic or not.
+
         :param topic: the topic object to look for
         :return: boolean
         """
@@ -240,6 +245,7 @@ class User(BaseModel):
     def owns_topic(self, topic):
         """
         checks if given topic is in the user's topics list, which means this user is the owner of the topic
+
         :param topic: the topic object to look for
         :return: boolean
         """
@@ -308,7 +314,6 @@ class User(BaseModel):
                 return False
         else:
             return False
-
 
     def get_token(self, expiration=None):
         raw_token = dict()

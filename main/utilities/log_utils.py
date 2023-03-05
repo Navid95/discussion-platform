@@ -1,9 +1,6 @@
 import logging
 from jsonformatter import JsonFormatter
 
-# TODO create 3 log streams
-# (api.log for endpoints(user before and after hooks) / exception.log for developers) / app.log for trace and debug during development
-
 
 """
 logger configs

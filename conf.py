@@ -3,7 +3,6 @@ from main.utilities import app_logger as logger
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-
 class BaseConfig:
     """
     Base Class of flask app configuration consisting of the following parts:
@@ -19,14 +18,15 @@ class BaseConfig:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'discussion app secret key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CUSTOM_ENCRYPTION_ALGO = os.environ.get('CUSTOM_ENCRYPTION_ALGO') or 'HS256'
-    DISCUSSION_MAIL_SUBJECT_PREFIX = os.environ.get('DISCUSSION_MAIL_SUBJECT_PREFIX') or 'DISCUSSION-PLATFORM'
+
+#   Redis configurations
     REDIS_DECODE_RESPONSES = True
 
-    # MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
-    # MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
-    # MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
-    # MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    # MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+#   flask-jwt-extended configurations
+#     by default if ot set flask SECRET_KEY is used by this extension
+    JWT_SECRET_KEY = os.environ.get('SECRET_KEY') or SECRET_KEY
+    # by default looks for jwts in headers
+    JWT_TOKEN_LOCATION = ['headers']
 
 
 class Dev(BaseConfig):
@@ -61,7 +61,6 @@ class Test(BaseConfig):
                               'sqlite://'
                               # 'sqlite:///'+ os.path.join(basedir, 'db.sqlite')
                               # 'sqlite:////home/navid/PycharmProjects/discussion-platform/db.sqlite'
-
 
 
 class Pro(BaseConfig):

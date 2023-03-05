@@ -41,3 +41,9 @@ def page_not_found(e):
     response = jsonify({'error': 'Bad Request'})
     response.status_code = 400
     return response
+
+
+def error(status_code, message):
+    response = jsonify({"status_code": status_code,"error": message})
+    response.status_code = status_code
+    return response
