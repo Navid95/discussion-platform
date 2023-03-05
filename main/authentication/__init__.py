@@ -5,6 +5,7 @@ from main.models import User, Topic, Post
 from main.utilities import app_logger as logger,NoUserFound
 from flask_jwt_extended import current_user
 from main.schemas import LoginSchema
+
 login_schema = LoginSchema()
 
 
